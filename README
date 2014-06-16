@@ -1,0 +1,10 @@
+Requirements
+1.	Python2.7
+
+Installation Steps
+1.	Install MITMProxy from https://github.com/mitmproxy/mitmproxy
+2.	git clone https://github.com/milo2012/fingerprint_browser.git
+3.	cd fingerprint_browser
+4.	python2.7 webserver.py 
+5.	Run the ettercap ARP spoofing command as shown on screen
+
