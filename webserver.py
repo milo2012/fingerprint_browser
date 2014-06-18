@@ -3,8 +3,16 @@ from SocketServer import ThreadingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import string,cgi,time,urlparse,commands,os,subprocess
 from os import curdir, sep
+import sys
 
 javaSelfsigned=True
+
+def findVuln(pdtName,pdtVer):
+	result = ''
+	if pdtName=='flash':
+		if pdtVer=='11.9.900.152':
+			result='CVE-2013-5331:\n'+'http://www.rapid7.com/db/modules/exploit/windows/browser/adobe_flash_filters_type_confusion'
+	return result
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -39,6 +47,7 @@ class Handler(BaseHTTPRequestHandler):
 				pdtName,pdtVer = i.split("=")
 				pdtVer = pdtVer.replace(",",".")
 				print pdtName+'\t'+pdtVer
+				print findVuln(pdtName,pdtVer)
             return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -87,8 +96,11 @@ def setupForwarding():
 
 def startMITMproxy():
 	setupForwarding()
-	cmd = 'screen -dmS mitm'
-	subprocess.Popen(cmd, shell=True)
+	cmd = 'screen -list | grep mitm'
+	result = commands.getstatusoutput(cmd)[1]
+	if 'mitm' not in result:
+		cmd = 'screen -dmS mitm'
+		subprocess.Popen(cmd, shell=True)
 	cmdStr = 'cd '+os.getcwd()
 	print cmdStr
 	cmd = 'screen -S mitm -X stuff "'+cmdStr+'^m"'
