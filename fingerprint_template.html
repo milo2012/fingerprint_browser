@@ -21,25 +21,25 @@ function CollectTID() {
 
 function CollectBrowser() {
     if (PluginDetect.isChrome) {
-        BrowserScanHostDetails["br"] = "chrome";
-        BrowserScanHostDetails["br_v"] = PluginDetect.verChrome;
-        return ("br=chrome&br_v=" + PluginDetect.verChrome + "&");
+        BrowserScanHostDetails["browser"] = "chrome";
+        BrowserScanHostDetails["version"] = PluginDetect.verChrome;
+        return ("browser=chrome&version=" + PluginDetect.verChrome + "&");
     } else if (PluginDetect.isIE) {
-        BrowserScanHostDetails["br"] = "ie";
-        BrowserScanHostDetails["br_v"] = PluginDetect.verIE;
-        return ("br=ie&br_v=" + PluginDetect.verIE + "&");
+        BrowserScanHostDetails["browser"] = "ie";
+        BrowserScanHostDetails["version"] = PluginDetect.verIE;
+        return ("browser=ie&version=" + PluginDetect.verIE + "&");
     } else if (PluginDetect.isGecko) {
-        BrowserScanHostDetails["br"] = "firefox";
-        BrowserScanHostDetails["br_v"] = PluginDetect.verGecko;
-        return ("br=firefox&br_v=" + PluginDetect.verGecko + "&");
+        BrowserScanHostDetails["browser"] = "firefox";
+        BrowserScanHostDetails["version"] = PluginDetect.verGecko;
+        return ("browser=firefox&version=" + PluginDetect.verGecko + "&");
     } else if (PluginDetect.isSafari) {
-        BrowserScanHostDetails["br"] = "safari";
-        BrowserScanHostDetails["br_v"] = PluginDetect.verSafari;
-        return ("br=safari&br_v=" + PluginDetect.verSafari + "&");
+        BrowserScanHostDetails["browser"] = "safari";
+        BrowserScanHostDetails["version"] = PluginDetect.verSafari;
+        return ("browser=safari&version=" + PluginDetect.verSafari + "&");
     } else if (PluginDetect.isOpera) {
-        BrowserScanHostDetails["br"] = "opera";
-        BrowserScanHostDetails["br_v"] = PluginDetect.verOpera;
-        return ("br=opera&br_v=" + PluginDetect.verOpera + "&");
+        BrowserScanHostDetails["browser"] = "opera";
+        BrowserScanHostDetails["version"] = PluginDetect.verOpera;
+        return ("browser=opera&version=" + PluginDetect.verOpera + "&");
     }
 }
 
@@ -2666,7 +2666,7 @@ function CollectParams(){
 	}
 	$(document).ready(function(){
 	//$(document).ready(function(){
-	  $.get('http://172.16.91.187:9090/scan?' + params, function(data) {
+	  $.get('http://172.16.91.187:9090/scan?' + params + '&' + browserInfo, function(data) {
 	  //plugins111
 	  });
 	});
