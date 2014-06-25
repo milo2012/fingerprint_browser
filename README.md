@@ -19,4 +19,4 @@ Thank you for the awesome code.
 
 ![alt text](https://raw.githubusercontent.com/milo2012/fingerprint_browser/master/screenshot.jpg "Screenshot of Script")
 
-Video available at [Video demo link][http://youtu.be/m8Yb-d7kzwQ]
+Demo video available at [http://youtu.be/m8Yb-d7kzwQ]
