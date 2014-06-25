@@ -49,9 +49,8 @@ def main(argv):
         sys.exit(1)
     iframe_url = argv[1]
     config = proxy.ProxyConfig(
-        cacert = os.path.expanduser("~/.mitmproxy/mitmproxy-ca.pem")
-	#,
-	#transparent_proxy = dict (resolver = platform.resolver(), sslports = [443, 8080])
+        cacert = os.path.expanduser("~/.mitmproxy/mitmproxy-ca.pem"),
+	transparent_proxy = dict (resolver = platform.resolver(), sslports = [443, 8080])
     )
     server = proxy.ProxyServer(config, 8080)
     print 'Starting proxy...'
