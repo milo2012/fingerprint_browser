@@ -1,41 +1,42 @@
 ***Installation Tips***
-apt-get install libffi-dev
 
-cd /tmp
+apt-get install libffi-dev    
 
-wget https://pypi.python.org/packages/source/s/setuptools/setuptools-5.2.tar.gz --no-check-certificate
+cd /tmp  
 
-tar xvfz setuptools-5.2.tar.gz
+wget https://pypi.python.org/packages/source/s/setuptools/setuptools-5.2.tar.gz --no-check-certificate  
 
-cd setuptools-5.2
+tar xvfz setuptools-5.2.tar.gz  
 
-python2.7 setup.py install
+cd setuptools-5.2  
 
-cd /tmp
+python2.7 setup.py install  
 
-wget https://pypi.python.org/packages/source/p/pip/pip-1.5.6.tar.gz --no-check-certificate
+cd /tmp  
 
-tar xvfz pip-1.5.6.tar.gz
+wget https://pypi.python.org/packages/source/p/pip/pip-1.5.6.tar.gz --no-check-certificate  
 
-cd pip-1.5.6
+tar xvfz pip-1.5.6.tar.gz  
 
-python2.7 setup.py  install
+cd pip-1.5.6  
 
-cd /tmp
+python2.7 setup.py  install  
 
-wget https://github.com/mitmproxy/mitmproxy/archive/v0.9.1.zip -O mitmproxy-0.9.1.zip
+cd /tmp  
 
-wget https://github.com/mitmproxy/netlib/archive/v0.9.1.zip -O netlib-0.9.1.zip
+wget https://github.com/mitmproxy/mitmproxy/archive/v0.9.1.zip -O mitmproxy-0.9.1.zip  
 
-unzip mitmproxy-0.9.1.zip
+wget https://github.com/mitmproxy/netlib/archive/v0.9.1.zip -O netlib-0.9.1.zip  
 
-unzip netlib-0.9.1.zip
+unzip mitmproxy-0.9.1.zip  
 
-cd  mitmproxy-0.9.1
+unzip netlib-0.9.1.zip  
 
-pip2.7 install PIL --allow-external PIL --allow-unverified PIL
+cd  mitmproxy-0.9.1  
 
-pip2.7 install -r requirements.txt
+pip2.7 install PIL --allow-external PIL --allow-unverified PIL  
+
+pip2.7 install -r requirements.txt  
 
 - Edit libmproxy/platform/__init__.py 
 - Replace the file with the below
@@ -53,10 +54,10 @@ elif sys.platform == "darwin":
     resolver = osx.Resolver
 ```
 
-python2.7 setup.py install 
+python2.7 setup.py install  
 
-cd ..
+cd ..  
 
-cd netlib-0.9.1
+cd netlib-0.9.1  
 
-python2.7 setup.py install 
+python2.7 setup.py install   
