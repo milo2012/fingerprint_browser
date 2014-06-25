@@ -14,6 +14,9 @@
 - python2.7 webserver.py 
 - Run the ettercap ARP spoofing command as shown on screen
 
+Detailed installations for MITMproxy can be found here  
+https://github.com/milo2012/fingerprint_browser/blob/master/installation.md
+
 The javascript code for the plugins version detection is from https://browserscan.rapid7.com/scanme.
 Thank you for the awesome code.
 
