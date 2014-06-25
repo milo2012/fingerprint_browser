@@ -20,3 +20,7 @@ Thank you for the awesome code.
 ![alt text](https://raw.githubusercontent.com/milo2012/fingerprint_browser/master/screenshot.jpg "Screenshot of Script")
 
 Demo video available at [http://youtu.be/m8Yb-d7kzwQ]
+
+**To Do Wish Lists**
+- Replace documents (pdf,word documents) on the fly with infected version via ARP spoofing
+- Inject infected documents into browsers via WPAD 
