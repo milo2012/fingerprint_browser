@@ -25,5 +25,7 @@ Thank you for the awesome code.
 Demo video available at [http://youtu.be/m8Yb-d7kzwQ]
 
 **To Do Wish Lists**
+- Obfuscated the Java browser exploits in Metasploit (refer to http://martin.swende.se/blog/java-exploits.html)
 - Replace documents (pdf,word documents) on the fly with infected version via ARP spoofing
 - Inject infected documents into browsers via WPAD 
+
