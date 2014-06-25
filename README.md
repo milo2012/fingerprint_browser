@@ -1,4 +1,4 @@
-''Description''
+**Description**
 This tool identifies the version of the browser and browser plugins (java/flash/reader) and exploits them via Metasploit.
 The target browser also reports back the plugins and their versions back to the tool.
 
