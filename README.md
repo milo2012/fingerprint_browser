@@ -8,7 +8,7 @@
 - Ettercap / Responder / Intercepter-NG
 
 **Installation Steps**
-- Install MITMProxy from https://github.com/mitmproxy/mitmproxy
+- Install MITMProxy 0.9.1 https://github.com/mitmproxy/mitmproxy/archive/v0.9.1.zip
 - git clone https://github.com/milo2012/fingerprint_browser.git
 - cd fingerprint_browser
 - python2.7 webserver.py 
