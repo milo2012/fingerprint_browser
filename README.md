@@ -1,5 +1,7 @@
 **Requirements**
 - Python2.7
+- MITMProxy
+- Ettercap / Responder / Intercepter-NG
 
 **Installation Steps**
 - Install MITMProxy from https://github.com/mitmproxy/mitmproxy
